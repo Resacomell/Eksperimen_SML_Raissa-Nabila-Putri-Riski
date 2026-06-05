@@ -1,10 +1,9 @@
 import os  
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 
-def automation_preprocessing(input_path, output_train_path, output_test_path):
+def automation_preprocessing(input_path, output_clean_path):
     
     df = pd.read_csv(input_path)
     print(f"- Data berhasil dimuat. Total baris awal: {len(df)}")
@@ -13,7 +12,7 @@ def automation_preprocessing(input_path, output_train_path, output_test_path):
     df['bmi'] = df['bmi'].fillna(df['bmi'].median())
     df['blood_glucose_level'] = df['blood_glucose_level'].fillna(df['blood_glucose_level'].median())
     
-    # 2. Menghapus Data Duplikatt
+    # 2. Menghapus Data Duplikat
     df = df.drop_duplicates().reset_index(drop=True)
     print(f"- Data duplikat dihapus. Total baris sekarang: {len(df)}")
     
@@ -37,40 +36,20 @@ def automation_preprocessing(input_path, output_train_path, output_test_path):
     le_smoking = LabelEncoder()
     df['smoking_history'] = le_smoking.fit_transform(df['smoking_history'])
     
-    # Memisahkan Fitur dan Target sebelum standardisasi
-    X = df.drop(columns=['diabetes'])
-    y = df['diabetes']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-    
-    X_train = X_train.copy()
-    X_test = X_test.copy()
-    
-    # 6. Normalisasi atau Standarisasi Fitur
     scaler = StandardScaler()
     num_cols = ['age', 'bmi', 'HbA1c_level', 'blood_glucose_level']
-    X_train[num_cols] = scaler.fit_transform(X_train[num_cols])
-    X_test[num_cols] = scaler.transform(X_test[num_cols])
+    df[num_cols] = scaler.fit_transform(df[num_cols])
     
-    # Gabungkan kembali fitur dan target untuk disimpan sebagai file siap latih
-    train_clean = X_train.copy()
-    train_clean['diabetes'] = y_train
+    df.to_csv(output_clean_path, index=False)
     
-    test_clean = X_test.copy()
-    test_clean['diabetes'] = y_test
-    
-    # Menyimpan file dataset hasil preprocessing ke folder yang sama
-    train_clean.to_csv(output_train_path, index=False)
-    test_clean.to_csv(output_test_path, index=False)
-    
-    print(f"Otomatisasi Berhasil! Data siap dilatih disimpan di: {output_train_path}")
-    return train_clean, test_clean
+    print(f"Otomatisasi Berhasil! Data siap dilatih disimpan di: {output_clean_path}")
+    return df
 
 if __name__ == "__main__":
     current_dir = os.path.dirname(os.path.abspath(__file__))
     
     INPUT_DATA = os.path.join(current_dir, "..", "diabetes_prediction_dataset.csv")
-    OUTPUT_TRAIN = os.path.join(current_dir, "diabetes_prediction_dataset_preprocessing.csv")
-    OUTPUT_TEST = os.path.join(current_dir, "diabetes_prediction_dataset_testing.csv")
     
-    # Eksekusi fungsi
-    automation_preprocessing(INPUT_DATA, OUTPUT_TRAIN, OUTPUT_TEST)
+    OUTPUT_CLEAN = os.path.join(current_dir, "diabetes_prediction_dataset_preprocessing.csv")
+    
+    automation_preprocessing(INPUT_DATA, OUTPUT_CLEAN)
