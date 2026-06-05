@@ -45,6 +45,7 @@ def automation_preprocessing(input_path, output_clean_path):
     print(f"Otomatisasi Berhasil! Data siap dilatih disimpan di: {output_clean_path}")
     return df
 
+
 if __name__ == "__main__":
     current_dir = os.path.dirname(os.path.abspath(__file__))
     
